@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "104516794428",
+    "project_id": "taklim-smart",
+    "storage_bucket": "taklim-smart.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:104516794428:android:b06acdaee076dafd6aeb39",
+        "android_client_info": {
+          "package_name": "com.example.taklimsmart"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQ3X-V2SFfwqaCZUTs8GfJPSFaf9aJWhU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
