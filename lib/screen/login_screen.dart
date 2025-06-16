@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart'; 
+import 'main_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   final TextEditingController nameController = TextEditingController();
@@ -48,14 +48,14 @@ class LoginScreen extends StatelessWidget {
             Center(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 2, 55, 4),
+                  backgroundColor:  const Color(0xFF4A5F2F),
                   shape: const StadiumBorder(),
                   padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
                 ),
                 onPressed: () {
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
+                    MaterialPageRoute(builder: (context) => const MainScreen()),
                   );
                 },
                 child: const Text(

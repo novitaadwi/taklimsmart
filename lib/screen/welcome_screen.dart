@@ -27,7 +27,7 @@ class WelcomeScreen extends StatelessWidget {
               SizedBox(height: 40),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 2, 55, 4),
+                  backgroundColor: const Color(0xFF4A5F2F),
                   shape: StadiumBorder(),
                   padding: EdgeInsets.symmetric(horizontal: 40, vertical: 14),
                 ),
@@ -42,14 +42,16 @@ class WelcomeScreen extends StatelessWidget {
               SizedBox(height: 16),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 255, 197, 23),
+                  backgroundColor: Color(0xFFD1863A),
                   shape: StadiumBorder(),
                   padding: EdgeInsets.symmetric(horizontal: 40, vertical: 14),
                 ),
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                    MaterialPageRoute(
+                      builder: (context) => const RegisterScreen(),
+                    ),
                   );
                 },
                 child: Text('Daftar', style: TextStyle(color: Colors.white)),

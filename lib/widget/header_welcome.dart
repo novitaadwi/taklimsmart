@@ -18,11 +18,13 @@ class HeaderWelcome extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Logo
-          const CircleAvatar(
-            backgroundImage: AssetImage('assets/images/logo.png'),
-            radius: 35,
+          Image.asset(
+            'assets/images/logo.png',
+            width: 60,
+            height: 60,
+            fit: BoxFit.contain,
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
 
           // Teks: TaklimSmart + Greeting
           Expanded(
@@ -61,19 +63,24 @@ class HeaderWelcome extends StatelessWidget {
           ),
 
           // Icon lonceng (notifikasi) dengan navigasi
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: IconButton(
-                icon: const Icon(Icons.notifications_none, color: Colors.white, size: 26),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const NotificationScreen()),
-                  );
-                },
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: IconButton(
+              icon: const Icon(
+                Icons.notifications_none,
+                color: Colors.white,
+                size: 26,
               ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationScreen(),
+                  ),
+                );
+              },
             ),
-
+          ),
         ],
       ),
     );

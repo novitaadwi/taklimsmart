@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart'; 
 
 class JadwalAdminScreen extends StatefulWidget {
   const JadwalAdminScreen({super.key});
@@ -56,14 +56,19 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
             data: ThemeData.light().copyWith(
               // Pastikan colorScheme diatur dengan benar untuk warna date picker
               colorScheme: const ColorScheme.light(
-                primary: Color(0xFFD1863A), // Warna utama untuk header date picker dan tombol
-                onPrimary: Colors.white,   // Warna teks di atas warna primary
-                surface: Colors.white,     // Warna background body date picker
-                onSurface: Colors.black,   // Warna teks dan ikon di atas warna surface
+                primary: Color(
+                  0xFFD1863A,
+                ), // Warna utama untuk header date picker
+                onPrimary: Colors.white, // Warna teks di atas warna primary
+                surface: Colors.white, // Warna background body date picker
+                onSurface:
+                    Colors.black, // Warna teks dan ikon di atas warna surface
               ), // Warna background dialog secara keseluruhan
               textButtonTheme: TextButtonThemeData(
                 style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFFD1863A), // Warna teks tombol 'Cancel' dan 'OK'
+                  foregroundColor: const Color(
+                    0xFFD1863A,
+                  ), // Warna teks tombol 'Batal' dan 'Oke'
                 ),
               ), dialogTheme: DialogThemeData(backgroundColor: Colors.white),
             ),
@@ -75,7 +80,10 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
       if (pickedDate != null) {
         // Menggunakan DateFormat untuk format "EEEE, d MMMM yyyy"
         // 'id_ID' untuk memastikan nama hari dan bulan dalam bahasa Indonesia
-        String formattedDate = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(pickedDate);
+        String formattedDate = DateFormat(
+          'EEEE, d MMMM yyyy',
+          'id_ID',
+        ).format(pickedDate);
         tanggalController.text = formattedDate;
       }
     }
@@ -89,14 +97,19 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
             data: ThemeData.light().copyWith(
               // Pastikan colorScheme diatur dengan benar untuk warna time picker
               colorScheme: const ColorScheme.light(
-                primary: Color(0xFFD1863A), // Warna utama untuk header time picker
-                onPrimary: Colors.white,   // Warna teks di atas warna primary
-                surface: Colors.white,     // Warna background body time picker
-                onSurface: Colors.black,   // Warna teks dan ikon di atas warna surface
+                primary: Color(
+                  0xFFD1863A,
+                ), // Warna utama untuk header time picker
+                onPrimary: Colors.white, // Warna teks di atas warna primary
+                surface: Colors.white, // Warna background body time picker
+                onSurface:
+                    Colors.black, // Warna teks dan ikon di atas warna surface
               ), // Warna background dialog secara keseluruhan
               textButtonTheme: TextButtonThemeData(
                 style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFFD1863A), // Warna teks tombol 'Cancel' dan 'OK'
+                  foregroundColor: const Color(
+                    0xFFD1863A,
+                  ), // Warna teks tombol 'Batal' dan 'Oke'
                 ),
               ), dialogTheme: DialogThemeData(backgroundColor: Colors.white),
             ),
@@ -107,18 +120,25 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
 
       if (pickedTime != null) {
         final now = DateTime.now();
-        final time = DateTime(now.year, now.month, now.day, pickedTime.hour, pickedTime.minute);
+        final time = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
         String formattedTime = DateFormat('HH:mm').format(time);
         waktuController.text = formattedTime;
       }
     }
 
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: SingleChildScrollView(
@@ -128,18 +148,29 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                 children: [
                   Text(
                     isEdit ? 'Edit Jadwal' : 'Tambah Jadwal',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 16),
 
                   // Tanggal
-                  _buildTextField('Tanggal Pengajian', tanggalController,
-                      readOnly: true, onTap: pilihTanggal),
+                  _buildTextField(
+                    'Tanggal Pengajian',
+                    tanggalController,
+                    readOnly: true,
+                    onTap: pilihTanggal,
+                  ),
                   const SizedBox(height: 12),
 
                   // Waktu
-                  _buildTextField('Waktu Pengajian', waktuController,
-                      readOnly: true, onTap: pilihWaktu),
+                  _buildTextField(
+                    'Waktu Pengajian',
+                    waktuController,
+                    readOnly: true,
+                    onTap: pilihWaktu,
+                  ),
                   const SizedBox(height: 12),
 
                   // Tempat
@@ -156,7 +187,9 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                     child: ElevatedButton(
                       onPressed: () {
                         final newJadwal = {
-                          'tanggal': tanggalController.text, // Ini sudah dalam format yang Anda inginkan
+                          'tanggal':
+                              tanggalController
+                                  .text, // Ini sudah dalam format yang Anda inginkan
                           'waktu': waktuController.text,
                           'tempat': tempatController.text,
                           'penceramah': penceramahController.text,
@@ -170,7 +203,9 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF4A5F2F),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: Text(
@@ -191,8 +226,12 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller,
-      {bool readOnly = false, VoidCallback? onTap}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
+    bool readOnly = false,
+    VoidCallback? onTap,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -203,7 +242,10 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
           readOnly: readOnly,
           onTap: onTap,
           decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
+            ),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
@@ -242,7 +284,10 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                   Text(
                     // jadwal['tanggal'] sudah dalam format yang diinginkan
                     jadwal['tanggal'] ?? '',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -276,24 +321,38 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                       ),
                       GestureDetector(
                         onTap: () => _showTambahJadwalDialog(index: index),
-                        child: const Icon(Icons.edit, color: Colors.white, size: 20),
+                        child: const Icon(
+                          Icons.edit,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       GestureDetector(
                         onTap: () => _hapusJadwal(index),
-                        child: const Icon(Icons.delete, color: Colors.white, size: 20),
+                        child: const Icon(
+                          Icons.delete,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
                     jadwal['waktu'] ?? '',
-                    style: TextStyle(fontSize: 14, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '598 m', // Pastikan ini juga diubah jika 'jarak' adalah data dinamis
-                    style: TextStyle(fontSize: 14, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Row(
@@ -301,9 +360,16 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                     children: [
                       Text(
                         jadwal['tempat'] ?? '',
-                        style: TextStyle(fontSize: 12, color: Colors.white),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                        ),
                       ),
-                      Image.asset('assets/images/gmaps.png', width: 24, height: 24),
+                      Image.asset(
+                        'assets/images/gmaps.png',
+                        width: 24,
+                        height: 24,
+                      ),
                     ],
                   ),
                 ],
@@ -323,7 +389,10 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 10,
+              ),
               child: Row(
                 children: [
                   GestureDetector(
@@ -333,7 +402,10 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                   const SizedBox(width: 10),
                   Text(
                     'Jadwal Pengajian',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -344,25 +416,32 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Jadwal Terdekat',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 12),
             Expanded(
-              child: jadwalList.isEmpty
-                  ? Center(
-                      child: Text(
-                        'Belum ada jadwal.',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
+              child:
+                  jadwalList.isEmpty
+                      ? Center(
+                        child: Text(
+                          'Belum ada jadwal.',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      )
+                      : ListView.builder(
+                        itemCount: jadwalList.length,
+                        itemBuilder: (context, index) {
+                          return _buildJadwalCard(jadwalList[index], index);
+                        },
                       ),
-                    )
-                  : ListView.builder(
-                      itemCount: jadwalList.length,
-                      itemBuilder: (context, index) {
-                        return _buildJadwalCard(jadwalList[index], index);
-                      },
-                    ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -373,7 +452,9 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                   onPressed: () => _showTambahJadwalDialog(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF4A5F2F),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                     elevation: 0,
                   ),
                   child: Row(

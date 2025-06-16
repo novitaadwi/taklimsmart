@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 class JadwalAdminScreen extends StatefulWidget {
   const JadwalAdminScreen({super.key});
@@ -31,6 +31,7 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
 
   void _showTambahJadwalDialog({int? index}) {
     final isEdit = index != null;
+
     final TextEditingController tanggalController = TextEditingController(
       text: isEdit ? jadwalList[index]['tanggal'] : '',
     );
@@ -43,6 +44,92 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
     final TextEditingController penceramahController = TextEditingController(
       text: isEdit ? jadwalList[index]['penceramah'] : '',
     );
+
+    Future<void> pilihTanggal() async {
+      DateTime? pickedDate = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2101),
+        builder: (BuildContext context, Widget? child) {
+          return Theme(
+            data: ThemeData.light().copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: Color(
+                  0xFFD1863A,
+                ), // Warna header DatePicker (background bulan/tahun)
+                onPrimary:
+                    Colors
+                        .white, // Warna teks di header (bulan/tahun, hari yang dipilih)
+                surface:
+                    Colors
+                        .white, // Warna background body DatePicker (tanggal-tanggal)
+                onSurface: Colors.black, // Warna teks tanggal di body
+              ), // Warna background dialog secara keseluruhan
+              textButtonTheme: TextButtonThemeData(
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(
+                    0xFFD1863A,
+                  ), // Warna teks tombol 'Batal' dan 'Oke'
+                ),
+              ), dialogTheme: DialogThemeData(backgroundColor: Colors.white),
+            ),
+            child: child!,
+          );
+        },
+      );
+
+      if (pickedDate != null) {
+        String formattedDate = DateFormat(
+          'EEEE, d MMMM y',
+          'id_ID',
+        ).format(pickedDate);
+        tanggalController.text = formattedDate;
+      }
+    }
+
+    Future<void> pilihWaktu() async {
+      TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+        builder: (BuildContext context, Widget? child) {
+          return Theme(
+            data: ThemeData.light().copyWith(
+              colorScheme: const ColorScheme.light(
+                primary: Color(
+                  0xFFD1863A,
+                ), // Warna utama untuk header TimePicker
+                onPrimary: Colors.white, // Warna teks di atas warna primary
+                surface: Colors.white, // Warna background body TimePicker
+                onSurface:
+                    Colors.black, // Warna teks dan ikon di atas warna surface
+              ), // Warna background dialog secara keseluruhan
+              textButtonTheme: TextButtonThemeData(
+                style: TextButton.styleFrom(
+                  foregroundColor: const Color(
+                    0xFFD1863A,
+                  ), // Warna teks tombol 'Batal' dan 'Oke'
+                ),
+              ), dialogTheme: DialogThemeData(backgroundColor: Colors.white),
+            ),
+            child: child!,
+          );
+        },
+      );
+
+      if (pickedTime != null) {
+        final now = DateTime.now();
+        final time = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        );
+        String formattedTime = DateFormat('HH:mm').format(time);
+        waktuController.text = formattedTime;
+      }
+    }
 
     showDialog(
       context: context,
@@ -60,20 +147,40 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                 children: [
                   Text(
                     isEdit ? 'Edit Jadwal' : 'Tambah Jadwal',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildTextField('Tanggal Pengajian', tanggalController),
+
+                  // Tanggal
+                  _buildTextField(
+                    'Tanggal Pengajian',
+                    tanggalController,
+                    readOnly: true,
+                    onTap: pilihTanggal,
+                  ),
                   const SizedBox(height: 12),
-                  _buildTextField('Waktu Pengajian', waktuController),
+
+                  // Waktu
+                  _buildTextField(
+                    'Waktu Pengajian',
+                    waktuController,
+                    readOnly: true,
+                    onTap: pilihWaktu,
+                  ),
                   const SizedBox(height: 12),
+
+                  // Tempat
                   _buildTextField('Tempat Pengajian', tempatController),
                   const SizedBox(height: 12),
+
+                  // Penceramah
                   _buildTextField('Penceramah', penceramahController),
                   const SizedBox(height: 20),
+
+                  // Tombol Simpan
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -85,7 +192,7 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                           'penceramah': penceramahController.text,
                         };
                         if (isEdit) {
-                          _editJadwal(index!, newJadwal);
+                          _editJadwal(index, newJadwal);
                         } else {
                           _tambahJadwal(newJadwal);
                         }
@@ -100,7 +207,7 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                       ),
                       child: Text(
                         'Simpan',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
@@ -116,147 +223,224 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
+    bool readOnly = false,
+    VoidCallback? onTap,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: GoogleFonts.poppins(fontSize: 14),
-        ),
+        Text(label, style: TextStyle(fontSize: 14)),
         const SizedBox(height: 4),
         TextField(
           controller: controller,
+          readOnly: readOnly,
+          onTap: onTap,
           decoration: InputDecoration(
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            border: OutlineInputBorder(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 14,
+            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(
+                color: Color(0xFFD1863A),
+                width: 2.0,
+              ),
+            ),
+            labelStyle: TextStyle(fontSize: 14, color: Colors.black),
+            floatingLabelStyle: TextStyle(
+              fontSize: 14,
+              color: Color(0xFFD1863A),
             ),
           ),
+          style: TextStyle(fontSize: 16, color: Colors.black),
         ),
       ],
     );
   }
 
   Widget _buildJadwalCard(Map<String, String> jadwal, int index) {
+    DateTime? parsedDate;
+    try {
+      parsedDate = DateFormat(
+        'EEEE, d MMMM y',
+        'id_ID',
+      ).parse(jadwal['tanggal'] ?? '');
+    } catch (e) {
+      print('Error parsing date: ${jadwal['tanggal']} - $e');
+      parsedDate = DateTime.now();
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           Container(
-            height: 160,
-            width: double.infinity,
+            height: 190,
             decoration: BoxDecoration(
-              color: const Color(0xFFF6F6F6),
+              color: Color(0xFFD1863A), // Background color for the card
               borderRadius: BorderRadius.circular(16),
-              image: const DecorationImage(
-                image: AssetImage('assets/images/pengajian.jpg'),
-                fit: BoxFit.cover,
-              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Container(
+                  height: 100,
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                    image: const DecorationImage(
+                      image: AssetImage('assets/images/pengajian.jpg'),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+                //informasi
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 8.0,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              jadwal['penceramah'] ?? '',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Text(
+                              jadwal['waktu'] ?? '',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${jadwal['tempat']}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const Spacer(),
+                            // Google Maps icon
+                            Image.asset(
+                              'assets/images/gmaps.png',
+                              width: 24,
+                              height: 24,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+
           Positioned(
-            top: 12,
-            left: 12,
+            top: 15,
+            left: 16,
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+              width: 60,
+              height: 70,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    jadwal['tanggal']?.split(' ').first ?? '',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
+                    DateFormat('d').format(parsedDate),
+                    style: TextStyle(
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
                   ),
                   Text(
-                    jadwal['tanggal']?.split(' ').last ?? '',
-                    style: GoogleFonts.poppins(fontSize: 12),
+                    DateFormat('MMM', 'id_ID').format(parsedDate),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.black,
+                    ),
                   ),
                 ],
               ),
             ),
           ),
           Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              margin: const EdgeInsets.all(12),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFFD1863A),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          jadwal['penceramah'] ?? '',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => _showTambahJadwalDialog(index: index),
-                        child:
-                            const Icon(Icons.edit, color: Colors.white, size: 20),
-                      ),
-                      const SizedBox(width: 12),
-                      GestureDetector(
-                        onTap: () => _hapusJadwal(index),
-                        child: const Icon(Icons.delete,
-                            color: Colors.white, size: 20),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    jadwal['waktu'] ?? '',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.white,
+            top: 15,
+            right: 16,
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () => _showTambahJadwalDialog(index: index),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.edit,
+                      color: Colors.black87,
+                      size: 20,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '598 m',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.white,
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () => _hapusJadwal(index),
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.delete,
+                      color: Colors.black87,
+                      size: 20,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        jadwal['tempat'] ?? '',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Image.asset(
-                        'assets/images/gmaps.png',
-                        width: 24,
-                        height: 24,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
@@ -271,10 +455,11 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 10,
+              ),
               child: Row(
                 children: [
                   GestureDetector(
@@ -284,7 +469,7 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                   const SizedBox(width: 10),
                   Text(
                     'Jadwal Pengajian',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
@@ -292,14 +477,13 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                 ],
               ),
             ),
-            // Subheader
             Padding(
               padding: const EdgeInsets.only(left: 16.0, top: 8.0),
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
                   'Jadwal Terdekat',
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -307,26 +491,25 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
               ),
             ),
             const SizedBox(height: 12),
-
-            // List of cards
-              Expanded(
-                child: jadwalList.isEmpty
-                    ? Center(
+            Expanded(
+              child:
+                  jadwalList.isEmpty
+                      ? Center(
                         child: Text(
                           'Belum ada jadwal.',
-                          style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                          ),
                         ),
                       )
-                    : ListView.builder(
+                      : ListView.builder(
                         itemCount: jadwalList.length,
                         itemBuilder: (context, index) {
                           return _buildJadwalCard(jadwalList[index], index);
                         },
                       ),
-              ),
-
-
-            // Tombol Tambah Jadwal
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: SizedBox(
@@ -340,7 +523,6 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -359,7 +541,7 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                       const SizedBox(width: 12),
                       Text(
                         'Tambah Jadwal',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
@@ -371,14 +553,12 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Bottom Navigation Manual
             Container(
               color: const Color(0xFF4A5F2F),
               padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Row(
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: const [
+                children: [
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [

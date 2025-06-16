@@ -94,7 +94,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             Center(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromARGB(255, 255, 197, 23),
+                  backgroundColor: Color(0xFFD1863A),
                   shape: const StadiumBorder(),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 40,
