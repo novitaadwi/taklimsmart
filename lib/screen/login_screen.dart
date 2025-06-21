@@ -18,6 +18,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
   bool isLoading = false;
 
+  bool _obscurePassword = true;
+
   void _login() async {
     final username = usernameController.text.trim();
     final password = passwordController.text.trim();
@@ -47,7 +49,9 @@ class _LoginScreenState extends State<LoginScreen> {
       await prefs.setInt('session_id', sessionId);
 
       Map<String, dynamic> claims = Jwt.parseJwt(token);
+      String role = (claims['user_Role'] ?? claims['role']).toString();
       print("Claims: $claims");
+      print("Role dari token: $role");
 
       // Feedback ke user
       ScaffoldMessenger.of(context).showSnackBar(
@@ -61,7 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(response.message?? 'Terjadi kesalahan saat login')),
+        SnackBar(content: Text(response.message ?? 'Terjadi kesalahan saat login')),
       );
       print("Success: ${response.success}");
       print("Message: ${response.message}");
@@ -100,11 +104,21 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 20),
             TextField(
               controller: passwordController,
-              decoration: const InputDecoration(
+              obscureText: _obscurePassword,
+              decoration: InputDecoration(
                 labelText: 'Password',
                 border: OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                ),
               ),
-              obscureText: true,
             ),
             const SizedBox(height: 30),
             Center(
