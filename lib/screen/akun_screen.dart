@@ -1,7 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:taklimsmart/screen/login_screen.dart';
+import 'package:taklimsmart/services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class AkunScreen extends StatelessWidget {
+class AkunScreen extends StatefulWidget {
   const AkunScreen({super.key});
+
+  @override
+  State<AkunScreen> createState() => _AkunScreenState();
+}
+
+class _AkunScreenState extends State<AkunScreen> {
+  Future<void> _handleLogout() async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token');
+  final sessionId = prefs.getInt('session_id');
+
+  if (token == null || sessionId == null) {
+    if (!mounted) return; // Cek apakah widget masih ada di tree
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+    return;
+  }
+
+  final response = await AuthService().logout(token, sessionId);
+
+  if (response.success) {
+    await prefs.remove('token');
+    await prefs.remove('session_id');
+    await prefs.remove('user_role');
+
+    if (!mounted) return; // Cek apakah widget masih ada di tree
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+  } else {
+    if (!mounted) return; // Cek apakah widget masih ada di tree
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(response.message ?? "Logout gagal.")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -117,11 +159,9 @@ class AkunScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async{
                   Navigator.of(context).pop(); // Tutup dialog
-                  Navigator.of(
-                    context,
-                  ).pushNamedAndRemoveUntil('/welcome', (route) => false);
+                  await _handleLogout();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red[800],
