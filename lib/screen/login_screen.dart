@@ -42,14 +42,17 @@ class _LoginScreenState extends State<LoginScreen> {
       final token = response.data!.token;
       final user = response.data!.user;
       final sessionId = response.data!.sessionId;
+      final idUser = response.data!.user.idUser;
 
       // Simpan token & sessionId
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', token);
       await prefs.setInt('session_id', sessionId);
+      await prefs.setInt('id_user', idUser);
 
       Map<String, dynamic> claims = Jwt.parseJwt(token);
       String role = (claims['user_Role'] ?? claims['role']).toString();
+      await prefs.setString('role', role);
       print("Claims: $claims");
       print("Role dari token: $role");
 

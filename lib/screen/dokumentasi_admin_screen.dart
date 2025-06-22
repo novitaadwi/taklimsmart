@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taklimsmart/services/dokumentasi_service.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:video_player/video_player.dart';
@@ -601,9 +602,12 @@ class _TambahDokumentasiScreenState extends State<TambahDokumentasiScreen> {
       return;
     }
 
+    final prefs = await SharedPreferences.getInstance();
+    final idUser =  prefs.getInt('id_user');
+
     final dokumentasi = Dokumentasi(
       idPenjadwalan: selectedPenjadwalanId,
-      uploadedBy: 1,
+      uploadedBy: idUser,
       captionDokumentasi: _captionController.text,
       fileName: upload['file_name'],
       filePath: upload['file_path'],
@@ -635,7 +639,7 @@ class _TambahDokumentasiScreenState extends State<TambahDokumentasiScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tambah Dokumentasi'),
+        title: const Text('Tambah Dokumentasi', style: TextStyle( color: Colors.white, ),),
         backgroundColor: const Color(0xFF4A5F2F),
       ),
       body: Padding(
@@ -894,7 +898,7 @@ class _EditDokumentasiScreenState extends State<EditDokumentasi> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Dokumentasi'),
+        title: const Text('Edit Dokumentasi', style: TextStyle( color: Colors.white, ),),
         backgroundColor: const Color(0xFF4A5F2F),
       ),
       body: Padding(
@@ -907,7 +911,7 @@ class _EditDokumentasiScreenState extends State<EditDokumentasi> {
               items: penjadwalanList.map((e) {
                 return DropdownMenuItem<int>(
                   value: e['id_Penjadwalan'],
-                  child: Text(e['nama'] ?? 'Penjadwalan ${e['id_Penjadwalan']}'),
+                  child: Text(e['nama'] ?? '${e['nama_Penjadwalan']}'),
                 );
               }).toList(),
               onChanged: (val) => setState(() => selectedPenjadwalanId = val),
