@@ -146,7 +146,7 @@ class DokumentasiService {
         ),
       );
       debugPrint('get data penjadwalan : $response');
-      return response.data;
+      return response.data['data'];
     } catch (e) {
       debugPrint('Gagal mengambil penjadwalan: $e');
       return [];
