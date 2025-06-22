@@ -1,9 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:taklimsmart/screen/jadwal_warga_screen.dart';
 import 'package:taklimsmart/screen/jadwal_admin_screen.dart';
+import 'package:taklimsmart/screen/dokumentasi_admin_screen.dart';
+
+import '../screen/dokumentasi_warga_screen.dart';
 
 class IconMenu extends StatelessWidget {
   const IconMenu({super.key});
+
+  Future<void> _navigateToDokumentasi(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final role = prefs.getString('role') ?? '';
+
+    if (role == 'admin') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const DokumentasiAdminScreen()),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const DokumentasiWargaScreen()),
+      );
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -34,9 +57,7 @@ class IconMenu extends StatelessWidget {
 
           // ==================== DOKUMENTASI ====================
           GestureDetector(
-            onTap: () {
-              // tambahkan navigasi jika ada screen Dokumentasi
-            },
+            onTap: () => _navigateToDokumentasi(context),
             child: Column(
               children: const [
                 CircleAvatar(
