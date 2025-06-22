@@ -129,7 +129,9 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
           ? const Center(child: CircularProgressIndicator())
           : currentLocation == null
               ? Center(child: Text(errorMessage))
-              : FlutterMap(
+          : Stack(
+              children: [
+                FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
                     initialCenter: currentLocation!,
@@ -165,78 +167,78 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                           ),
                         ],
                       ),
-
-                    if (searchResults.isNotEmpty)
-                      Positioned(
-                        top: 60,
-                        left: 16,
-                        right: 16,
-                        child: Material(
-                          elevation: 4,
-                          borderRadius: BorderRadius.circular(8),
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: searchResults.length,
-                            itemBuilder: (context, index) {
-                              final result = searchResults[index];
-                              return ListTile(
-                                title: Text(result['display_name'] ?? 'Lokasi tidak ditemukan'),
-                                onTap: () {
-                                  final lat = double.parse(result['lat']);
-                                  final lon = double.parse(result['lon']);
-                                  setState(() {
-                                    searchedLocation = LatLng(lat, lon);
-                                    selectedLocation = searchedLocation;
-                                    _searchController.text = result['display_name'];
-                                    _mapController.move(searchedLocation!, 16.0);
-                                    searchResults = [];
-                                  });
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-
-                    Positioned(
-                        top: 16,
-                        left: 16,
-                        right: 16,
-                        child: Material(
-                          elevation: 4,
-                          borderRadius: BorderRadius.circular(8),
-                          child: TextField(
-                            controller: _searchController,
-                            decoration: InputDecoration(
-                              hintText: 'Cari Lokasi',
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              border: InputBorder.none,
-                              suffixIcon: IconButton(
-                                icon: const Icon(Icons.search),
-                                onPressed: () {
-                                  final query = _searchController.text.trim();
-                                  if (query.isNotEmpty) {
-                                    searchLocationSuggestions(query);
-                                  }
-                                },
-                              ),
-                            ),
-                            onChanged: (value) {
-                              if (value.trim().isNotEmpty) {
-                                searchLocationSuggestions(value);
-                              } else {
-                                setState(() => searchResults = []);
-                              }
-                            },
-                            onSubmitted: (value) {
-                              if (value.isNotEmpty) searchLocationSuggestions(value);
-                            },
-                          ),
-                        ),
-                      ),
-
                   ],
                 ),
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  right: 16,
+                  child: Material(
+                    elevation: 4,
+                    borderRadius: BorderRadius.circular(8),
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Cari Lokasi',
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: InputBorder.none,
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.search),
+                          onPressed: () {
+                            final query = _searchController.text.trim();
+                            if (query.isNotEmpty) {
+                              searchLocationSuggestions(query);
+                            }
+                          },
+                        ),
+                      ),
+                      onChanged: (value) {
+                        if (value.trim().isNotEmpty) {
+                          searchLocationSuggestions(value);
+                        } else {
+                          setState(() => searchResults = []);
+                        }
+                      },
+                      onSubmitted: (value) {
+                        if (value.isNotEmpty) searchLocationSuggestions(value);
+                      },
+                    ),
+                  ),
+                ),
+                if (searchResults.isNotEmpty)
+                  Positioned(
+                    top: 60,
+                    left: 16,
+                    right: 16,
+                    child: Material(
+                      elevation: 4,
+                      borderRadius: BorderRadius.circular(8),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: searchResults.length,
+                        itemBuilder: (context, index) {
+                          final result = searchResults[index];
+                          return ListTile(
+                            title: Text(result['display_name'] ?? 'Lokasi tidak ditemukan'),
+                            onTap: () {
+                              final lat = double.parse(result['lat']);
+                              final lon = double.parse(result['lon']);
+                              final latLng = LatLng(lat, lon);
+                              setState(() {
+                                searchedLocation = latLng;
+                                selectedLocation = latLng;
+                                _searchController.text = result['display_name'];
+                                _mapController.move(latLng, 16.0);
+                                searchResults = [];
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+              ],
+      ),
       
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _submitLocation,

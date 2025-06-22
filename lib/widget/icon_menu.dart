@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 // import 'package:taklimsmart/screen/jadwal_warga_screen.dart';
 import 'package:taklimsmart/screen/jadwal_admin_screen.dart';
+import 'package:taklimsmart/screen/dokumentasi_admin_screen.dart';
 
 class IconMenu extends StatelessWidget {
   const IconMenu({super.key});
@@ -35,7 +36,10 @@ class IconMenu extends StatelessWidget {
           // ==================== DOKUMENTASI ====================
           GestureDetector(
             onTap: () {
-              // tambahkan navigasi jika ada screen Dokumentasi
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const DokumentasiAdminScreen()),
+              );
             },
             child: Column(
               children: const [

@@ -43,6 +43,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 addressController.text = alamatLengkap;
                 selectedLocation = pickedLocation;
               });
+              print("Selected location: ${pickedLocation.latitude}, ${pickedLocation.longitude}");
             }
           },
         ),
