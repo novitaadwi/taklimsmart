@@ -3,19 +3,45 @@ import '../widget/header_welcome.dart';
 import '../widget/routine_card.dart';
 import '../widget/icon_menu.dart';
 import '../widget/history_item.dart';
+import '../services/penjadwalan_service.dart';
+import '../models/penjadwalan_model.dart';
+import '../models/lokasi_model.dart';
+import '../models/response_model.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+  final penjadwalanService = PenjadwalanService();
     return Scaffold(
       backgroundColor: Colors.grey[100],
       body: SingleChildScrollView(
         child: Column(
           children: [
             const HeaderWelcome(),
-            const RoutineCard(),
+            FutureBuilder<ApiResponse<(LokasiModel, PenjadwalanReadModel)>>(
+              future: penjadwalanService.getPengajianTerdekat(),
+              builder: (context, snapshot) {
+                print('HAS ERROR: ${snapshot.hasError}');
+                print('ERROR: ${snapshot.error}');
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                if (snapshot.hasError || snapshot.data?.data == null) {
+                  return Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(snapshot.data?.message ?? 'Terjadi kesalahan yang tidak diketahui'),
+                  );
+                }
+
+                final (lokasi, penjadwalan) = snapshot.data!.data!;
+                return RoutineCard(lokasi: lokasi, penjadwalan: penjadwalan);
+              },
+            ),
             const IconMenu(),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

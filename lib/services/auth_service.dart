@@ -64,9 +64,6 @@ class AuthService {
   final url = Uri.parse('$baseUrl/logout');
 
   try {
-    
-    print("Logout with token: $token");
-    print("Session ID: $sessionId");
     final response = await http.post(
       url,
       headers: {
@@ -75,11 +72,16 @@ class AuthService {
       },
       body: jsonEncode({'session_id': sessionId}),
     );
+
+    print("Logout with token: $token");
+    print("Session ID: $sessionId");
     print("Logout response: ${response.body}");
+
     final jsonData = jsonDecode(response.body);
     return ApiResponse<void>.fromJson(jsonData, null);
   } catch (e) {
       return ApiResponse<void>(
+
         success: false,
         message: 'Terjadi kesalahan saat Logout, mohon coba lagi',
         data: null,

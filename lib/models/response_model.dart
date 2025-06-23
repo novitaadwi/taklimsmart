@@ -14,7 +14,7 @@ class ApiResponse<T> {
     T Function(Map<String, dynamic>)? fromJsonT,
   ) {
     return ApiResponse(
-      success: json['success'],
+      success: json['success'] ?? json['status'] == true,
       message: json['message']?.toString(),
       data: json['data'] != null && fromJsonT != null
           ? fromJsonT(json['data'])

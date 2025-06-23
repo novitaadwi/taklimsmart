@@ -13,10 +13,14 @@ class AkunScreen extends StatefulWidget {
 class _AkunScreenState extends State<AkunScreen> {
   Future<void> _handleLogout() async {
   final prefs = await SharedPreferences.getInstance();
+  print("Session ID dari SharedPref: ${prefs.getInt('session_id')}");
+  print("Token dari SharedPref: ${prefs.getString('token')}");
   final token = prefs.getString('token');
   final sessionId = prefs.getInt('session_id');
+  
 
   if (token == null || sessionId == null) {
+    await prefs.clear();
     if (!mounted) return; // Cek apakah widget masih ada di tree
     Navigator.pushReplacement(
       context,
@@ -28,9 +32,9 @@ class _AkunScreenState extends State<AkunScreen> {
   final response = await AuthService().logout(token, sessionId);
 
   if (response.success) {
-    await prefs.remove('token');
-    await prefs.remove('session_id');
-    await prefs.remove('user_role');
+    await prefs.clear();
+    print("✅ Logout berhasil, data dihapus");
+    await Future.delayed(const Duration(milliseconds: 200));
 
     if (!mounted) return; // Cek apakah widget masih ada di tree
     Navigator.pushReplacement(
