@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:taklimsmart/models/penjadwalan_model.dart';
+import 'package:taklimsmart/screen/lokasi_screen.dart';
 import 'package:taklimsmart/services/penjadwalan_service.dart';
 import 'package:taklimsmart/models/lokasi_model.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
@@ -489,10 +490,18 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                             ),
                             const Spacer(),
                             // Google Maps icon
-                            Image.asset(
-                              'assets/images/gmaps.png',
-                              width: 24,
-                              height: 24,
+                            IconButton(
+                              icon: Image.asset(
+                                'assets/images/gmaps.png',
+                                width: 24,
+                                height: 24,
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const LokasiScreen()),
+                              );
+                              },
                             ),
                           ],
                         ),

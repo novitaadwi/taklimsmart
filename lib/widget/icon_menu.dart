@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:taklimsmart/screen/jadwal_warga_screen.dart';
 import 'package:taklimsmart/screen/jadwal_admin_screen.dart';
 import 'package:taklimsmart/screen/dokumentasi_admin_screen.dart';
+import 'package:taklimsmart/screen/lokasi_screen.dart';
 
 import '../screen/dokumentasi_warga_screen.dart';
 
@@ -73,7 +74,10 @@ class IconMenu extends StatelessWidget {
           // ==================== LOKASI ====================
           GestureDetector(
             onTap: () {
-              // tambahkan navigasi jika ada screen Lokasi
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LokasiScreen()),
+              );
             },
             child: Column(
               children: const [
