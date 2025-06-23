@@ -49,6 +49,7 @@ dependencies:
   geocoding: ^4.0.0
   shared_preferences: ^2.5.3
   jwt_decode: ^0.3.1
+  flutter_typeahead: ^5.2.0
 
   dio: ^5.4.0
   image_picker: ^1.1.0

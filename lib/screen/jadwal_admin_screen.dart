@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:taklimsmart/models/penjadwalan_model.dart';
+import 'package:taklimsmart/services/penjadwalan_service.dart';
+import 'package:taklimsmart/models/lokasi_model.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
+
 
 class JadwalAdminScreen extends StatefulWidget {
   const JadwalAdminScreen({super.key});
@@ -9,15 +14,62 @@ class JadwalAdminScreen extends StatefulWidget {
 }
 
 class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
-  List<Map<String, String>> jadwalList = [];
+  List<PenjadwalanModel> jadwalList = [];
+  Map<int, LokasiModel> lokasiMap = {};
+  List<LokasiModel> lokasiList = []; //untuk list lokasi yang ada di tabel lokasi
 
-  void _tambahJadwal(Map<String, String> newJadwal) {
+  Future<void> _searchLokasi() async {
+  final result = await PenjadwalanService().getAllLokasi();
+  if (result.success && result.data != null) {
     setState(() {
-      jadwalList.add(newJadwal);
+      lokasiList = result.data!;
+      lokasiMap = {
+        for (var lokasi in lokasiList) lokasi.idLokasi: lokasi,
+      };
     });
+  } else {
+      print(result.message);
+    }
   }
 
-  void _editJadwal(int index, Map<String, String> updatedJadwal) {
+  Future<void> _fetchJadwal() async {
+  final result = await PenjadwalanService().getAllPenjadwalan();
+  setState(() {
+    jadwalList = result.data!.where((jadwal) {
+      try {
+        final tanggal = DateFormat('yyyy-MM-dd').parse(jadwal.tanggal);
+        final today = DateTime.now();
+        return !tanggal.isBefore(DateTime(today.year, today.month, today.day));
+      } catch (e) {
+        print('Error parsing tanggal: ${jadwal.tanggal}');
+        return false;
+      }
+    }).toList();
+  });
+  if (result.success && result.data != null) {
+    setState(() {
+      jadwalList = result.data!;
+    });
+  } else {
+      print(result.message);
+    }
+  }
+
+  Future<void> _tambahJadwal(PenjadwalanModel newJadwal) async {
+    final response = await PenjadwalanService().createJadwal(newJadwal);
+    if (response.success) {
+      await _fetchJadwal();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(response.message ?? 'Jadwal berhasil ditambahkan')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(response.message ?? 'Jadwal gagal ditambahkan')),
+      );
+    }
+  }
+
+  void _editJadwal(int index, PenjadwalanModel updatedJadwal) {
     setState(() {
       jadwalList[index] = updatedJadwal;
     });
@@ -31,19 +83,43 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
 
   void _showTambahJadwalDialog({int? index}) {
     final isEdit = index != null;
+    final jadwal = isEdit ? jadwalList[index] : null;
 
-    final TextEditingController tanggalController = TextEditingController(
-      text: isEdit ? jadwalList[index]['tanggal'] : '',
+    final tanggalController = TextEditingController(text: jadwal?.tanggal ?? '');
+    final waktuController = TextEditingController(text: jadwal?.waktu ?? '');
+    final deskripsiController = TextEditingController(text: jadwal?.deskripsi ?? '');
+    final namaController = TextEditingController(text: jadwal?.namaPenjadwalan ?? '');
+    final idLokasiController = TextEditingController(text: jadwal?.idLokasi.toString() ?? '');
+    final tempatController = TextEditingController(
+      text: isEdit
+          ? lokasiList.firstWhere(
+              (lokasi) => lokasi.idLokasi == jadwal?.idLokasi,
+              orElse: () => LokasiModel(idLokasi: 0, namaLokasi: '', alamat: '', latitude: 0.0, longitude: 0.0),
+            ).namaLokasi
+          : '',
     );
-    final TextEditingController waktuController = TextEditingController(
-      text: isEdit ? jadwalList[index]['waktu'] : '',
-    );
-    final TextEditingController tempatController = TextEditingController(
-      text: isEdit ? jadwalList[index]['tempat'] : '',
-    );
-    final TextEditingController penceramahController = TextEditingController(
-      text: isEdit ? jadwalList[index]['penceramah'] : '',
-    );
+    String formatWaktuUntukBackend(String input) {
+      try {
+        final parsed = DateFormat('HH:mm').parse(input);
+        return DateFormat('HH:mm:ss').format(parsed);
+      } catch (e) {
+        print('Gagal format waktu untuk backend: $e');
+        return '';
+      }
+    }
+
+    String formatTanggalUntukBackend(String input) {
+      try {
+        final parsed = DateFormat('EEEE, d MMMM y', 'id_ID').parseStrict(input);
+        final result = DateFormat('yyyy-MM-dd').format(parsed);
+        print('Tanggal dikonversi untuk backend: $result');
+        return result;
+      } catch (e) {
+        print('Gagal format tanggal untuk backend dari "$input": $e');
+        return '';
+      }
+    }
+
 
     Future<void> pilihTanggal() async {
       DateTime? pickedDate = await showDatePicker(
@@ -154,6 +230,10 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                   ),
                   const SizedBox(height: 16),
 
+                  // Nama Pengajian
+                  _buildTextField('Nama Pengajian', namaController),
+                  const SizedBox(height: 12),
+
                   // Tanggal
                   _buildTextField(
                     'Tanggal Pengajian',
@@ -173,28 +253,59 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                   const SizedBox(height: 12),
 
                   // Tempat
-                  _buildTextField('Tempat Pengajian', tempatController),
+                  Text('Tempat Pengajian',
+                    style: TextStyle(fontSize: 14),
+                  ),
+                  TypeAheadField<LokasiModel>(
+                    suggestionsCallback: (search) {
+                      final suggestions = lokasiList
+                          .where((lokasi) =>
+                              lokasi.namaLokasi.toLowerCase().contains(search.toLowerCase()))
+                          .toList();
+                      return Future.value(suggestions);
+                    },
+                    builder: (context, _, focusNode) {
+                      return TextField(
+                        controller: tempatController,
+                        focusNode: focusNode,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                      );
+                    },
+                    itemBuilder: (context, LokasiModel lokasi) {
+                      return ListTile(
+                        title: Text(lokasi.namaLokasi),
+                      );
+                    },
+                    onSelected: (LokasiModel lokasi) {
+                      tempatController.text = lokasi.namaLokasi;
+                      idLokasiController.text = lokasi.idLokasi.toString();
+                    },
+                  ),
                   const SizedBox(height: 12),
 
-                  // Penceramah
-                  _buildTextField('Penceramah', penceramahController),
-                  const SizedBox(height: 20),
+                  _buildTextField('Deskripsi Pengajian', deskripsiController),
+                  const SizedBox(height: 12),
 
                   // Tombol Simpan
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () {
-                        final newJadwal = {
-                          'tanggal': tanggalController.text,
-                          'waktu': waktuController.text,
-                          'tempat': tempatController.text,
-                          'penceramah': penceramahController.text,
-                        };
+                      onPressed: () async{
+                        final newJadwal = PenjadwalanModel(
+                          idPenjadwalan: isEdit ? jadwalList[index].idPenjadwalan : 0,
+                          namaPenjadwalan: namaController.text,
+                          tanggal: formatTanggalUntukBackend(tanggalController.text),
+                          waktu: formatWaktuUntukBackend(waktuController.text),
+                          idLokasi: int.tryParse(idLokasiController.text) ?? 0,
+                          deskripsi: deskripsiController.text,
+                          status: StatusPenjadwalan.diproses,
+                        );
                         if (isEdit) {
                           _editJadwal(index, newJadwal);
                         } else {
-                          _tambahJadwal(newJadwal);
+                          await _tambahJadwal(newJadwal);
                         }
                         Navigator.pop(context);
                       },
@@ -263,17 +374,29 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
     );
   }
 
-  Widget _buildJadwalCard(Map<String, String> jadwal, int index) {
+//Menampilkan Penjadwalan
+  Widget _buildJadwalCard(PenjadwalanModel jadwal, int index) {
     DateTime? parsedDate;
     try {
-      parsedDate = DateFormat(
-        'EEEE, d MMMM y',
-        'id_ID',
-      ).parse(jadwal['tanggal'] ?? '');
+      parsedDate = DateFormat('yyyy-MM-dd').parse(jadwal.tanggal);
+      DateFormat('EEEE, d MMMM y', 'id_ID').format(parsedDate);
     } catch (e) {
-      print('Error parsing date: ${jadwal['tanggal']} - $e');
+      print('Error parsing date: ${jadwal.tanggal} - $e');
       parsedDate = DateTime.now();
     }
+
+    String waktuFormatted = '';
+    try {
+      final parsedTime = DateFormat('HH:mm:ss').parse(jadwal.waktu);
+      waktuFormatted = DateFormat('HH:mm').format(parsedTime);
+    } catch (e) {
+      print('Error parsing time: ${jadwal.waktu} - $e');
+      waktuFormatted = jadwal.waktu;
+    }
+
+    final lokasiNama = jadwal.idLokasi != 0
+    ? lokasiMap[jadwal.idLokasi]?.namaLokasi ?? 'Lokasi tidak ditemukan'
+    : 'Lokasi tidak tersedia';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
@@ -321,10 +444,22 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              jadwal['penceramah'] ?? '',
+                              jadwal.namaPenjadwalan,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              jadwal.deskripsi ?? '',
+                              style: TextStyle(
+                                fontSize: 14,
                                 color: Colors.black,
                               ),
                             ),
@@ -334,18 +469,22 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                         Row(
                           children: [
                             Text(
-                              jadwal['waktu'] ?? '',
+                              "Waktu : $waktuFormatted",
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
+                                fontStyle: FontStyle.italic,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              '${jadwal['tempat']}',
+                              "Tempat : $lokasiNama",
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.black87,
+                                fontStyle: FontStyle.italic,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                             const Spacer(),
@@ -446,6 +585,13 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchJadwal();
+    _searchLokasi();
   }
 
   @override
