@@ -7,10 +7,24 @@ import '../services/penjadwalan_service.dart';
 import '../models/penjadwalan_model.dart';
 import '../models/lokasi_model.dart';
 import '../models/response_model.dart';
+import '../widget/notif_dialog.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      tampilkanNotifikasiDialog(context);
+    });
+  }
+  
   @override
   Widget build(BuildContext context) {
   final penjadwalanService = PenjadwalanService();
