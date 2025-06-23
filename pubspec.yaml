@@ -38,7 +38,7 @@ dependencies:
   cloud_firestore: ^5.6.7
   font_awesome_flutter: ^10.5.0
   google_fonts: ^6.1.0
-  intl: ^0.20.2
+  intl: 0.19.0
 
   flutter_localizations: 
     sdk: flutter
@@ -50,6 +50,7 @@ dependencies:
   shared_preferences: ^2.5.3
   jwt_decode: ^0.3.1
   flutter_typeahead: ^5.2.0
+  url_launcher: ^6.2.5 
 
   dio: ^5.4.0
   image_picker: ^1.1.0
