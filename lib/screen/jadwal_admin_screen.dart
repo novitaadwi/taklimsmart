@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:taklimsmart/models/penjadwalan_model.dart';
-import 'package:taklimsmart/screen/lokasi_screen.dart';
 import 'package:taklimsmart/services/penjadwalan_service.dart';
 import 'package:taklimsmart/models/lokasi_model.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 
 class JadwalAdminScreen extends StatefulWidget {
@@ -17,7 +17,18 @@ class JadwalAdminScreen extends StatefulWidget {
 class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
   List<PenjadwalanModel> jadwalList = [];
   Map<int, LokasiModel> lokasiMap = {};
-  List<LokasiModel> lokasiList = []; //untuk list lokasi yang ada di tabel lokasi
+  List<LokasiModel> lokasiList = [];
+  
+  final penjadwalanService = PenjadwalanService();
+  Future<void> openGoogleMaps(double latitude, double longitude) async {
+    final url = Uri.parse('https://www.google.com/maps/search/?api=1&query=$latitude,$longitude');
+
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not launch Google Maps';
+    }
+  }//untuk list lokasi yang ada di tabel lokasi
 
   Future<void> _searchLokasi() async {
   final result = await PenjadwalanService().getAllLokasi();
@@ -395,6 +406,8 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
       waktuFormatted = jadwal.waktu;
     }
 
+    final lokasi = lokasiMap[jadwal.idLokasi];
+
     final lokasiNama = jadwal.idLokasi != 0
     ? lokasiMap[jadwal.idLokasi]?.namaLokasi ?? 'Lokasi tidak ditemukan'
     : 'Lokasi tidak tersedia';
@@ -472,7 +485,7 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                             Text(
                               "Waktu : $waktuFormatted",
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 12,
                                 color: Colors.black87,
                                 fontStyle: FontStyle.italic,
                                 fontWeight: FontWeight.w500,
@@ -482,7 +495,7 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                             Text(
                               "Tempat : $lokasiNama",
                               style: TextStyle(
-                                fontSize: 14,
+                                fontSize: 12,
                                 color: Colors.black87,
                                 fontStyle: FontStyle.italic,
                                 fontWeight: FontWeight.w500,
@@ -491,16 +504,20 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                             const Spacer(),
                             // Google Maps icon
                             IconButton(
-                              icon: Image.asset(
+                              icon: 
+                              Image.asset(
                                 'assets/images/gmaps.png',
                                 width: 24,
                                 height: 24,
                               ),
                               onPressed: () {
-                                Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const LokasiScreen()),
-                              );
+                                if (lokasi != null) {
+                                  openGoogleMaps(lokasi.latitude, lokasi.longitude);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Lokasi tidak ditemukan')),
+                                  );
+                                }
                               },
                             ),
                           ],
