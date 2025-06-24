@@ -161,4 +161,87 @@ class PenjadwalanService {
       );
     }
   }
+
+  Future<ApiResponse<void>> updateJadwal(int id, PenjadwalanModel jadwal) async {
+    try {
+      final token = await TokenService.getToken();
+      if (token == null) {
+        return ApiResponse(success: false, message: 'Token otorisasi tidak tersedia.', data: null);
+      }
+
+      final url = Uri.parse('$baseUrl/Penjadwalan/edit/$id');
+      final requestBody = jsonEncode(jadwal.toJson());
+      print('Request Body (updateJadwal): $requestBody');
+
+      final response = await http.put(
+        url,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $token',
+        },
+        body: requestBody,
+      );
+
+      print('Status Code (updateJadwal): ${response.statusCode}');
+      print('Response Body (updateJadwal): ${response.body}');
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        if (jsonData['status'] == true) {
+          return ApiResponse(success: true, message: jsonData['message'] ?? 'Jadwal berhasil diperbarui', data: null);
+        } else {
+          return ApiResponse(success: false, message: jsonData['message'] ?? 'Gagal memperbarui jadwal (API respons tidak sukses)', data: null);
+        }
+      } else if (response.statusCode == 404) {
+        return ApiResponse(success: false, message: 'Jadwal tidak ditemukan', data: null);
+      } else {
+        final errorData = jsonDecode(response.body);
+        return ApiResponse(success: false, message: errorData['message'] ?? 'Gagal memperbarui jadwal (Status: ${response.statusCode})', data: null);
+      }
+    } catch (e, stackTrace) {
+      print('Error memperbarui jadwal: $e');
+      print('Stacktrace: $stackTrace');
+      return ApiResponse(success: false, message: 'Terjadi kesalahan jaringan saat memperbarui jadwal: $e', data: null);
+    }
+  }
+
+  Future<ApiResponse<void>> deleteJadwal(int id) async {
+    try {
+      final token = await TokenService.getToken();
+      if (token == null) {
+        return ApiResponse(success: false, message: 'Token otorisasi tidak tersedia.', data: null);
+      }
+
+      final url = Uri.parse('$baseUrl/Penjadwalan/delete/$id'); 
+
+      final response = await http.delete(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      print('Status Code (deleteJadwal): ${response.statusCode}');
+      print('Response Body (deleteJadwal): ${response.body}');
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        if (jsonData['status'] == true) { // Asumsi back-end menggunakan 'status'
+          return ApiResponse(success: true, message: jsonData['message'] ?? 'Jadwal berhasil dihapus', data: null);
+        } else {
+          return ApiResponse(success: false, message: jsonData['message'] ?? 'Gagal menghapus jadwal (API respons tidak sukses)', data: null);
+        }
+      } else if (response.statusCode == 404) {
+        return ApiResponse(success: false, message: 'Jadwal tidak ditemukan', data: null);
+      } else {
+        final errorData = jsonDecode(response.body);
+        return ApiResponse(success: false, message: errorData['message'] ?? 'Gagal menghapus jadwal (Status: ${response.statusCode})', data: null);
+      }
+    } catch (e, stackTrace) {
+      print('Error menghapus jadwal: $e');
+      print('Stacktrace: $stackTrace');
+      return ApiResponse(success: false, message: 'Terjadi kesalahan jaringan saat menghapus jadwal: $e', data: null);
+    }
+  }
 }

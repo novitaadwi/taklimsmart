@@ -81,16 +81,40 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
     }
   }
 
-  void _editJadwal(int index, PenjadwalanModel updatedJadwal) {
-    setState(() {
-      jadwalList[index] = updatedJadwal;
-    });
+  Future<void> _editJadwal(int index, PenjadwalanModel updatedJadwal) async {
+    final response = await penjadwalanService.updateJadwal(
+      updatedJadwal.idPenjadwalan, // ID jadwal yang akan diupdate
+      updatedJadwal,
+    );
+
+    if (response.success) {
+      await _fetchJadwal(); // Ambil data terbaru setelah update berhasil
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response.message ?? 'Jadwal berhasil diperbarui'),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(response.message ?? 'Jadwal gagal diperbarui')),
+      );
+    }
   }
 
-  void _hapusJadwal(int index) {
-    setState(() {
-      jadwalList.removeAt(index);
-    });
+  Future<void> _hapusJadwal(int index) async {
+    final jadwalId = jadwalList[index].idPenjadwalan;
+    final response = await penjadwalanService.deleteJadwal(jadwalId);
+
+    if (response.success) {
+      await _fetchJadwal(); // Ambil data terbaru setelah hapus berhasil
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(response.message ?? 'Jadwal berhasil dihapus')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(response.message ?? 'Jadwal gagal dihapus')),
+      );
+    }
   }
 
   void _showTambahJadwalDialog({int? index}) {

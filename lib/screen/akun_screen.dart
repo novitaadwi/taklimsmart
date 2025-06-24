@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:taklimsmart/screen/login_screen.dart';
 import 'package:taklimsmart/services/auth_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:taklimsmart/models/user_model.dart';
 
 class AkunScreen extends StatefulWidget {
   const AkunScreen({super.key});
@@ -11,42 +12,68 @@ class AkunScreen extends StatefulWidget {
 }
 
 class _AkunScreenState extends State<AkunScreen> {
+  User? user;
+  bool isLoading = true;
+
   Future<void> _handleLogout() async {
-  final prefs = await SharedPreferences.getInstance();
-  print("Session ID dari SharedPref: ${prefs.getInt('session_id')}");
-  print("Token dari SharedPref: ${prefs.getString('token')}");
-  final token = prefs.getString('token');
-  final sessionId = prefs.getInt('session_id');
-  
+    final prefs = await SharedPreferences.getInstance();
+    print("Session ID dari SharedPref: ${prefs.getInt('session_id')}");
+    print("Token dari SharedPref: ${prefs.getString('token')}");
+    final token = prefs.getString('token');
+    final sessionId = prefs.getInt('session_id');
+    
+    if (token == null || sessionId == null) {
+      await prefs.clear();
+      if (!mounted) return; // Cek apakah widget masih ada di tree
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+      return;
+    }
 
-  if (token == null || sessionId == null) {
-    await prefs.clear();
-    if (!mounted) return; // Cek apakah widget masih ada di tree
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
-    return;
-  }
+    final response = await AuthService().logout(token, sessionId);
 
-  final response = await AuthService().logout(token, sessionId);
+    if (response.success) {
+      await prefs.clear();
+      print("Logout berhasil, data dihapus");
+      await Future.delayed(const Duration(milliseconds: 200));
 
-  if (response.success) {
-    await prefs.clear();
-    print("Logout berhasil, data dihapus");
-    await Future.delayed(const Duration(milliseconds: 200));
-
-    if (!mounted) return; // Cek apakah widget masih ada di tree
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
-  } else {
-    if (!mounted) return; // Cek apakah widget masih ada di tree
+      if (!mounted) return; 
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    } else {
+    if (!mounted) return; 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(response.message ?? "Logout gagal.")),
       );
     }
+  }
+
+  Future<void> _loadProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token');
+    if (token == null) return;
+
+    final response = await AuthService().getProfile(token);
+    if (response.success && response.data != null) {
+      setState(() {
+        user = response.data;
+        isLoading = false;
+      });
+    } else {
+      // Handle error atau tampilkan snackbar
+      setState(() => isLoading = false);
+    }
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
   }
 
   @override
@@ -76,15 +103,13 @@ class _AkunScreenState extends State<AkunScreen> {
               ),
               child: Column(
                 children: [
-                  _profileItem('Username', 'Mark123'),
+                  _profileItem('Username', user?.username ?? '-'),
                   const SizedBox(height: 12),
-                  _profileItem('Email', 'mark@email.com'),
+                  _profileItem('Email', user?.email ?? '-'),
                   const SizedBox(height: 12),
-                  _profileItem('No Hp', '081234567890'),
+                  _profileItem('No Hp', user?.noHp ?? '-'),
                   const SizedBox(height: 12),
-                  _profileItem('Alamat', 'Jl. Mawar No. 10'),
-                  const SizedBox(height: 12),
-                  _profileItem('Password', '********'),
+                  _profileItem('Alamat', user?.alamat ?? '-'),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
