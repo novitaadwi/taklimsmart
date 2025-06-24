@@ -311,4 +311,3 @@ class _PreviewMediaScreenState extends State<PreviewMediaScreen> {
     );
   }
 }
-
