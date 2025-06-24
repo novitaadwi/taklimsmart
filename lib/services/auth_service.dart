@@ -2,10 +2,34 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:taklimsmart/models/response_model.dart';
 import 'package:taklimsmart/models/auth_model.dart';
+import 'package:taklimsmart/models/user_model.dart';
 
 class AuthService {
   final String baseUrl = 'https://api-taklimsmart-production.up.railway.app';
 
+  Future<ApiResponse<User>> getProfile(String token) async {
+    final url = Uri.parse('$baseUrl/akun');
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      final jsonData = jsonDecode(response.body);
+      if (jsonData['status'] == true) {
+        final user = User.fromJson(jsonData['data']);
+        return ApiResponse(success: true, message: "Berhasil", data: user);
+      } else {
+        return ApiResponse(success: false, message: jsonData['message']);
+      }
+    } catch (e) {
+      return ApiResponse(success: false, message: "Gagal memuat profil");
+    }
+  }
+  
   Future<ApiResponse<void>> register(Map<String, dynamic> data) async {
     final url = Uri.parse('$baseUrl/register');
 
