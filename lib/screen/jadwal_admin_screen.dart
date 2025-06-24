@@ -30,6 +30,30 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
     }
   }//untuk list lokasi yang ada di tabel lokasi
 
+  String formatWaktuUntukBackend(String input) {
+    try {
+      final parsed = DateFormat('HH:mm').parse(input);
+      return DateFormat('HH:mm:ss').format(parsed);
+    } catch (e) {
+      print('Gagal format waktu untuk backend: $e');
+      return '';
+    }
+  }
+
+  String formatTanggalUntukBackend(String input) {
+    if (RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(input)) {
+      return input;
+    }
+    try {
+      final parsed = DateFormat('EEEE, d MMMM y', 'id_ID').parseStrict(input);
+      return DateFormat('yyyy-MM-dd').format(parsed);
+    } catch (e) {
+      print('Gagal format tanggal untuk backend dari "$input": $e');
+      return '';
+    }
+  }
+
+
   Future<void> _searchLokasi() async {
   final result = await PenjadwalanService().getAllLokasi();
   if (result.success && result.data != null) {
@@ -82,17 +106,34 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
   }
 
   Future<void> _editJadwal(int index, PenjadwalanModel updatedJadwal) async {
+    final formattedTanggal = updatedJadwal.tanggal; 
+
+    if (formattedTanggal.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Format tanggal tidak valid.")),
+      );
+      return;
+    }
+
+    final fixedJadwal = PenjadwalanModel(
+      idPenjadwalan: updatedJadwal.idPenjadwalan,
+      tanggal: formattedTanggal,
+      waktu: updatedJadwal.waktu,
+      namaPenjadwalan: updatedJadwal.namaPenjadwalan,
+      idLokasi: updatedJadwal.idLokasi,
+      deskripsi: updatedJadwal.deskripsi,
+      status: updatedJadwal.status,
+    );
+
     final response = await penjadwalanService.updateJadwal(
-      updatedJadwal.idPenjadwalan, // ID jadwal yang akan diupdate
-      updatedJadwal,
+      fixedJadwal.idPenjadwalan,
+      fixedJadwal,
     );
 
     if (response.success) {
-      await _fetchJadwal(); // Ambil data terbaru setelah update berhasil
+      await _fetchJadwal();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(response.message ?? 'Jadwal berhasil diperbarui'),
-        ),
+        SnackBar(content: Text(response.message ?? 'Jadwal berhasil diperbarui')),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -102,11 +143,30 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
   }
 
   Future<void> _hapusJadwal(int index) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Konfirmasi"),
+        content: const Text("Apakah Anda yakin ingin menghapus Jadwal ini?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Batal"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("Hapus", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true) return;
+
     final jadwalId = jadwalList[index].idPenjadwalan;
     final response = await penjadwalanService.deleteJadwal(jadwalId);
 
     if (response.success) {
-      await _fetchJadwal(); // Ambil data terbaru setelah hapus berhasil
+      await _fetchJadwal(); 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(response.message ?? 'Jadwal berhasil dihapus')),
       );
@@ -134,28 +194,6 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
             ).namaLokasi
           : '',
     );
-    String formatWaktuUntukBackend(String input) {
-      try {
-        final parsed = DateFormat('HH:mm').parse(input);
-        return DateFormat('HH:mm:ss').format(parsed);
-      } catch (e) {
-        print('Gagal format waktu untuk backend: $e');
-        return '';
-      }
-    }
-
-    String formatTanggalUntukBackend(String input) {
-      try {
-        final parsed = DateFormat('EEEE, d MMMM y', 'id_ID').parseStrict(input);
-        final result = DateFormat('yyyy-MM-dd').format(parsed);
-        print('Tanggal dikonversi untuk backend: $result');
-        return result;
-      } catch (e) {
-        print('Gagal format tanggal untuk backend dari "$input": $e');
-        return '';
-      }
-    }
-
 
     Future<void> pilihTanggal() async {
       DateTime? pickedDate = await showDatePicker(
@@ -192,10 +230,7 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
       );
 
       if (pickedDate != null) {
-        String formattedDate = DateFormat(
-          'EEEE, d MMMM y',
-          'id_ID',
-        ).format(pickedDate);
+        String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
         tanggalController.text = formattedDate;
       }
     }
@@ -444,7 +479,7 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
           Container(
             height: 190,
             decoration: BoxDecoration(
-              color: Color(0xFFD1863A), // Background color for the card
+              color: Color(0xFFD1863A), 
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -503,7 +538,6 @@ class _JadwalAdminScreenState extends State<JadwalAdminScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
                         Row(
                           children: [
                             Text(
