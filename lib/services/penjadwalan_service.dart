@@ -20,7 +20,7 @@ class PenjadwalanService {
           'Authorization': 'Bearer $token',
           'Content-Type': 'application/json',
         },
-      ).timeout(const Duration(seconds: 10));
+      );
       
       print("Logout with token: $token");
       print('Status Code: ${response.statusCode}');
@@ -67,7 +67,7 @@ class PenjadwalanService {
         'Content-Type': 'application/json',
       },
     );
-
+    
     print('Status Code: ${response.statusCode}');
     print('Body: ${response.body}');
     final List<dynamic> listData = jsonDecode(response.body);
@@ -75,10 +75,10 @@ class PenjadwalanService {
     final lokasiList = listData.map((e) => LokasiModel.fromJson(e)).toList();
 
     return ApiResponse(
-      success: true,
-      message:'Berhasil Mengambil data lokasi',
-      data: lokasiList,
-    );
+    success: true,
+    message: 'Berhasil',
+    data: lokasiList,
+  );
   } catch (e, stackTrace) {
     print('Error ambil lokasi: $e');
     print('Stacktrace: $stackTrace');

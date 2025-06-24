@@ -33,7 +33,7 @@ class _AkunScreenState extends State<AkunScreen> {
 
   if (response.success) {
     await prefs.clear();
-    print("✅ Logout berhasil, data dihapus");
+    print("Logout berhasil, data dihapus");
     await Future.delayed(const Duration(milliseconds: 200));
 
     if (!mounted) return; // Cek apakah widget masih ada di tree
